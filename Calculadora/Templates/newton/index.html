@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Título de la página</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #5f6a63;
+        }
+        h1 {
+            color: #eabe7d;
+        }
+        p{
+            color: #ebebed;
+        }
+        .menu {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+        button {
+            margin-right: 50px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #a9543f;
+            color : #acb2b2;
+            border: none;
+            border-radius: 500px;
+            
+        }
+
+        
+    </style>
+</head>
+<body>
+    <!-- Contenido de la página va aquí -->
+    <h1>Metodos para encontrar la raiz de una ecuacion</h1>
+    <p>seleccione el metodo desea utilizar</p>
+    <div-meun>
+    <button onclick="location.href='{% url 'biseccion' %}'">Método de Bisección</button>
+    <button onclick="location.href='{% url 'newton' %}'">Método de Newton</button>
+    <button onclick="location.href='{% url 'secante' %}'">Método de la Secante</button>     
+    <button onclick="location.href='{% url 'newton_modificado' %}'">Método Newton Modificado</button>
+
+    </div>
+</body>
+</html>

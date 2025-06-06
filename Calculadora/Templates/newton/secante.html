@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Método de la Secante</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #5f6a63;
+        }
+        h1 {
+            color: #eabe7d;
+        }
+        .Inicio {
+            margin-top: 40px;
+            display: flex;
+       
+            gap: 30px;
+        }
+        button {
+            margin-right: 50px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #a9543f;
+            color: #acb2b2;
+            border: none;
+            border-radius: 500px;
+        }
+    </style>
+    <script>
+        function validarEcuacion() {
+            const ecuacion = document.getElementById('ecuacion').value.trim();
+            // Permite números, letras, operadores matemáticos y paréntesis
+            const regex = /^[0-9a-zA-Z+\-*/^(). ]+$/;
+            if (!ecuacion) {
+                alert('Por favor, ingresa una ecuación.');
+                return false;
+            }
+            if (!regex.test(ecuacion)) {
+                alert('La ecuación contiene caracteres no válidos.');
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <div class="Inicio">
+        <button onclick="location.href='{% url 'index' %}'">Inicio</button>
+    </div>
+    <h1>Método de la Secante</h1>
+    <form method="post" onsubmit="return validarEcuacion();">
+    {% csrf_token %}
+    <label for="ecuacion">Ingresa la ecuación (usa x):</label>
+    <input type="text" id="ecuacion" name="ecuacion" required>
+    <br>
+    <label for="x0">x₀ inicial:</label>
+    <input type="number" step="any" id="x0" name="x0" required>
+    <label for="x1">x₁ inicial:</label>
+    <input type="number" step="any" id="x1" name="x1" required>
+    <button type="submit">Calcular</button>
+</form>
+{% if resultados %}
+<table border="1">
+    <tr>
+        <th>n</th>
+        <th>x<sub>n-1</sub></th>
+        <th>x<sub>n</sub></th>
+        <th>f(x<sub>n-1</sub>)</th>
+        <th>f(x<sub>n</sub>)</th>
+        <th>x<sub>n+1</sub></th>
+        <th>Error</th>
+    </tr>
+    {% for r in resultados %}
+    <tr>
+        <td>{{ r.n }}</td>
+        <td>{{ r.xn_1 }}</td>
+        <td>{{ r.xn }}</td>
+        <td>{{ r.fxn_1 }}</td>
+        <td>{{ r.fxn }}</td>
+        <td>{{ r.xn1 }}</td>
+        <td>{{ r.error }}</td>
+    </tr>
+    {% endfor %}
+    <!-- ...tu código HTML anterior... -->
+
+{% if resultados %}
+    <canvas id="grafica" width="600" height="300"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Obtener la última aproximación de la raíz
+        const resultados = {{ resultados|safe }};
+        const raiz = resultados[resultados.length - 1].xn1;
+
+        
+        function f(x) {
+            
+            return eval("{{ ecuacion|escapejs }}".replace(/Math\./g, "Math.").replace(/np\./g, "Math.")); // Si usas np en ecuación
+        }
+
+        // Generar puntos para la gráfica
+        let xData = [];
+        let yData = [];
+        let minX = resultados[0].xn_1;
+        let maxX = resultados[0].xn;
+        for (let i = 0; i < resultados.length; i++) {
+            minX = Math.min(minX, resultados[i].xn_1, resultados[i].xn, resultados[i].xn1);
+            maxX = Math.max(maxX, resultados[i].xn_1, resultados[i].xn, resultados[i].xn1);
+        }
+        minX -= 2;
+        maxX += 2;
+        for (let x = minX; x <= maxX; x += (maxX-minX)/100) {
+            xData.push(x);
+            try {
+                yData.push(eval("{{ ecuacion|escapejs }}".replace(/x/g, `(${x})`)));
+            } catch {
+                yData.push(null);
+            }
+        }
+
+        // Crear la gráfica
+        new Chart(document.getElementById('grafica'), {
+            type: 'line',
+            data: {
+                labels: xData,
+                datasets: [
+                    {
+                        label: 'f(x)',
+                        data: yData,
+                        borderColor: 'blue',
+                        fill: false,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Raíz aproximada',
+                        data: xData.map(x => Math.abs(x - raiz) < 0.05 ? 0 : null),
+                        borderColor: 'red',
+                        backgroundColor: 'red',
+                        pointRadius: 6,
+                        type: 'scatter',
+                        showLine: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: false,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'x' } },
+                    y: { title: { display: true, text: 'f(x)' } }
+                }
+            }
+        });
+    </script>
+{% endif %}
+</table>
+{% endif %}
+</body>
+</html>
